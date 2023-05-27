@@ -5,7 +5,10 @@ import Input from "@/app/components/inputs/Input";
 import { useCallback, useState } from "react"
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import AuthSocialButton from "./AuthSocialButton";
-import {BsGoogle , BsGithub} from "react-icons/bs"
+import { BsGoogle, BsGithub } from "react-icons/bs"
+import axios from "axios";
+import { toast } from "react-hot-toast"
+import { signIn } from 'next-auth/react'
 
 type Variant = 'LOGIN' | 'REGISTER';
 
@@ -38,18 +41,45 @@ const AuthForm = () => {
         setIsLoading(true)
 
         if (variant === "REGISTER") {
-            //axios register
+            axios.post("/api/register", data)
+                .then(() => setVariant('LOGIN'))
+                .catch(() => toast.error('Someting went wrong!'))
+                .finally(() => setIsLoading(false))
+            
         }
 
         if (variant === "LOGIN") {
-            //NextAuth SignIn
+            signIn('credentials', {
+                ...data,
+                redirect: false
+            })
+                .then((callback) => {
+                    if (callback?.error) {
+                        toast.error('Invalid credentials')
+                    }
+
+                    if (callback?.ok && !callback?.error) {
+                        toast.success("Logged in!")
+                    }
+                })
+                .finally(() => setIsLoading(false))
         }
     }
 
     const socialAction = (action: string) => {
         setIsLoading(true);
 
-        //NextAuth Social SignIn
+        signIn(action, { redirect: false })
+            .then((callback) => {
+                if (callback?.error) {
+                    toast.error("Invalid Credentials")
+                }
+
+                if (callback?.ok && !callback?.error) {
+                    toast.success("Logged in!")
+                }
+            })
+            .finally(() => setIsLoading(false))
     }
 
     return (
@@ -110,7 +140,7 @@ const AuthForm = () => {
                             />
                         </div>
 
-                        <div 
+                        <div
                             className="relative flex justify-center text-sm"
                         >
                             <span
@@ -122,11 +152,11 @@ const AuthForm = () => {
                     </div>
 
                     <div className="mt-6 flex gap-2" >
-                        <AuthSocialButton 
+                        <AuthSocialButton
                             icon={BsGithub}
                             onClick={() => socialAction("github")}
                         />
-                        <AuthSocialButton 
+                        <AuthSocialButton
                             icon={BsGoogle}
                             onClick={() => socialAction("google")}
                         />
