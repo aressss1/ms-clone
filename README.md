@@ -26,7 +26,7 @@
 ### Cloning the repository
 
 ```shell
-git clone https://github.com/AntonioErdeljac/next13-messenger.git
+git clone https://github.com/aressss1/ms-clone.git
 ```
 
 ### Install packages
